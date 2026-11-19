@@ -1,0 +1,20 @@
+{
+  "jev": {
+    "jev-1.14.0": {
+      "tuned": true,
+      "thresholds": {"FIT_HIGH": 0.70, "FIT_LOW": 0.30, "P_TOP_MIN": 0.70, "MARGIN_MIN": 0.25, "JIRA_YES": 0.70, "JIRA_NO": 0.30}
+    }
+  },
+  "gemini": {
+    "gemini-decision-1": {
+      "tuned": false,
+      "thresholds": {"FIT_HIGH": 0.70, "FIT_LOW": 0.30, "P_TOP_MIN": 0.70, "MARGIN_MIN": 0.25, "JIRA_YES": 0.70, "JIRA_NO": 0.30}
+    }
+  },
+  "peewee": {
+    "mix-v1": {
+      "tuned": false,
+      "thresholds": {"FIT_HIGH": 0.70, "FIT_LOW": 0.30, "P_TOP_MIN": 0.70, "MARGIN_MIN": 0.25, "JIRA_YES": 0.70, "JIRA_NO": 0.30}
+    }
+  }
+}
