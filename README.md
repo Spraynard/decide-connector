@@ -3,6 +3,45 @@
 Send typed questions (choice / score / noul) to Jev (hosted) or Peewee (local) behind one interface.
 Stdlib only; `peewee_decide` is imported lazily by `PeeweeLocalEngine`. Step 1 of `handler/DECIDE-CONNECTOR.md`.
 
+## Usage
+```python
+from decide_connector import JevEngine, PeeweeHTTPEngine, Profiles, Router, AllEnginesFailed
+from decide_connector.adapt import preflight
+
+state = {"subject": "Billed twice", "body": "I was charged twice for my March invoice, please refund one."}
+questions = {
+    "is_billing": {"type": "noul", "instructions": "Is this ticket about billing?"},
+    "dept": {"type": "choice", "instructions": "Which department should handle this ticket?",
+             "criteria": {"billing": "payments, invoices, refunds",
+                          "support": "how-to and product help",
+                          "sales": "pricing and new purchases"}},
+    "urgency": {"type": "score", "instructions": "How urgent is this ticket?",
+                "criteria": ["not urgent", "very urgent"]},
+}
+
+# Validate and adapt the questions for the engine you expect to answer them.
+questions, warnings = preflight("peewee", questions)
+
+# Peewee first; fall back to Jev on any EngineError (outage, rate limit, credits).
+router = Router({"peewee": PeeweeHTTPEngine("http://localhost:8000"), "jev": JevEngine()},
+                policy="prefer:peewee,jev")
+try:
+    res = router.decide(state, questions)
+except AllEnginesFailed as e:
+    raise SystemExit("no engine answered: %s" % e.errors)
+
+answers = res["answers"]
+print(res["routed"])               # {"engine": "peewee", "reason": "primary"}
+print(answers["dept"]["choice"], answers["dept"]["probabilities"])
+print(answers["is_billing"]["noul"], res["latency_ms"], res["warnings"])
+
+# Engine-specific thresholds (warns once if that profile is untuned).
+p_top_min = Profiles.load("profiles.example.json").get(res["engine"], res["engine_version"], "P_TOP_MIN")
+if max(answers["dept"]["probabilities"].values()) < p_top_min:
+    print("low confidence: send to a human")
+```
+A single engine works the same without a router: `PeeweeHTTPEngine().decide(state, questions)`.
+
 ## Config
 - `JevEngine(base_url, path, api_key, model)`: defaults `https://api.typesafe.ai`, `/v1/decide`, `$TYPESAFE_API_KEY`
   (env `JEV_BASE_URL` / `JEV_PATH` also read), model `jev-1.14.0`. HTTP 402 -> `CreditError`, 429 -> `RateLimitError`, other failures -> `EngineError`.
