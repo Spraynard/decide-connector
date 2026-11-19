@@ -1,7 +1,7 @@
 # decide-connector
 
 Send typed questions (choice / score / noul) to Jev (hosted) or Peewee (local) behind one interface.
-Stdlib only; `peewee_decide` is imported lazily by `PeeweeLocalEngine`. Step 1 of `handler/DECIDE-CONNECTOR.md`.
+Stdlib only; `peewee_decide` is imported lazily by `PeeweeLocalEngine`.
 
 ## Usage
 ```python
